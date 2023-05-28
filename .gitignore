@@ -1,0 +1,14 @@
+__pycache__
+/.idea
+.env
+.DS_Store
+/usage_logs
+venv
+rehold_*
+report_*
+analysis_*
+test*
+/analysis
+/reports
+summart.txt
+/data
