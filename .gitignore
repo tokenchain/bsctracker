@@ -4,6 +4,7 @@ __pycache__
 .DS_Store
 /usage_logs
 venv
+/enp
 rehold_*
 report_*
 analysis_*
@@ -12,3 +13,5 @@ test*
 /reports
 summart.txt
 /data
+/datgraph
+/report_network.txt
