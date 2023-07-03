@@ -20,6 +20,7 @@ file_format = 'data/reports/report_{}.txt'
 file_analysis = 'data/analysis/analysis_{}.json'
 api_key = "59IISNUG2CR3PIMAJF7MACQTS7DY6WFJDJ"
 url = 'https://api.bscscan.com/api'
+# url = 'https://luckychain.pro/api'
 statement = 'End : {}, IO File {}'
 address_blacklist = "https://raw.githubusercontent.com/scamsniffer/scam-database/main/blacklist/address.json"
 statement_sum = '\nReport for address {}\nTotal outgoing USDT: {} / count: {}\nTotal incoming USDT: {} / count: {}\nNet {}'
@@ -62,6 +63,77 @@ def find_trans_based_on_coin(user_address: str, contract_address: str) -> Union[
     except Exception as e:
         print(f"got error from the explorer error exception - {contract_address}, {e}")
         return 0
+
+
+requests.packages.urllib3.disable_warnings()
+
+
+class WithTags:
+
+    def __init__(self):
+        self.tags = {}
+        self.dex = {}
+        self.black = []
+
+    def tagPre(self):
+        with open('tagged.json', newline='') as f:
+            document = json.loads(f.read())
+            self.tags = document["exchange"]
+            self.black = document["blacklist"]
+            self.dex = document["dex"]
+            print("tagging is loaded.")
+
+    def isDex(self, address: str) -> bool:
+        try:
+            name = self.dex[address]
+            return True
+        except KeyError:
+            return False
+
+    def isTagged(self, address: str) -> bool:
+        try:
+            name = self.tags[address]
+            return True
+        except KeyError:
+            return False
+
+    def tagging(self, address: str) -> str:
+        if self.isTagged is True:
+            return self.tags[address]
+        return ""
+
+    def tagdex(self, address: str) -> str:
+        if self.isTagged is True:
+            return self.dex[address]
+        return ""
+
+
+class Blockscout():
+    def __init__(self):
+        self.base = "https://luckychain.pro/api/"
+        self.start = 0
+
+    def checkAdd(self, addressHash: str):
+        payload = {
+            "module": "account",
+            "action": "txlist",
+            "address": addressHash
+        }
+        headers = {}
+        try:
+            response = requests.request("GET", self.base, headers=headers, data=payload, verify=False)
+            print(response)
+            print(response.text)
+            return addressHash
+        except requests.exceptions.ReadTimeout:
+            print(f"got timeout read error from the explorer - {addressHash}")
+            return addressHash
+        except ValueError as b:
+            print(f"got error from the explorer value error - {addressHash}, {b}")
+            return addressHash
+        except Exception as e:
+            print(f"got error from the explorer error exception - {addressHash}, {e}")
+            return addressHash
 
 
 def find_trans(x_hash: str) -> int:
@@ -124,7 +196,7 @@ def byValueStr(amount: str) -> str:
 
 class Filex:
     def __init__(self):
-        self.relation_file = "data/report_network.txt"
+        self.relation_file = ""
         self.report_file = ""
         self.intel_file = ""
 
@@ -144,11 +216,6 @@ class Filex:
         else:
             return load_data(address_blacklist)
 
-    def AppendLineRelation(self, content: str):
-        file_object = open(self.relation_file, 'a')
-        file_object.write(content)
-        file_object.close()
-
     def AppendLineLog(self, content: str):
         file_object = open(self.report_file, 'a')
         file_object.write(content)
@@ -159,8 +226,18 @@ class Filex:
         file_object.write(content)
         file_object.close()
 
+    def setup_staking_eeee6(self):
+        self.relation_file = "data/report_fund_input.txt"
+        print(self.report_file)
+
+    def setup_ceresbinder_v3(self):
+        self.relation_file = "data/report_network.txt"
+        print(self.report_file)
+
+    # relation related
     def openRelation(self) -> list:
         mlist = []
+        self.setup_ceresbinder_v3()
         with open(self.relation_file, newline='') as f:
             for line in f.readlines():
                 line = line.replace("\n", "")
@@ -168,6 +245,11 @@ class Filex:
                 mlist.append([f"0x{address_p[0]}", f"0x{address_p[1]}"])
 
         return mlist
+
+    def AppendLineRelation(self, content: str):
+        file_object = open(self.relation_file, 'a')
+        file_object.write(content)
+        file_object.close()
 
 
 class CoinList(Filex):
@@ -181,6 +263,7 @@ class CoinList(Filex):
         self.outcount = 0
         self.incount = 0
         self.wallet_address = ""
+        self.sym = ""
 
     def by_user(self, holder: str):
         self.wallet_address = holder
@@ -190,6 +273,7 @@ class CoinList(Filex):
     def findUsdtFor(self, user: str) -> "CoinList":
         self.dec = 18
         self.by_user(user)
+        self.sym = "USDT"
         self.data = find_trans_based_on_coin(user, "0x55d398326f99059ff775485246999027b3197955")
         self.thenAnalysis()
         return self
@@ -197,6 +281,7 @@ class CoinList(Filex):
     def findEthFor(self, user: str) -> "CoinList":
         self.dec = 18
         self.by_user(user)
+        self.sym = "WETH"
         self.data = find_trans_based_on_coin(user, "0x2170Ed0880ac9A755fd29B2688956BD959F933F8")
         self.thenAnalysis()
         return self
@@ -204,13 +289,23 @@ class CoinList(Filex):
     def findBNBFor(self, user: str) -> "CoinList":
         self.dec = 18
         self.by_user(user)
+        self.sym = "WBNB"
         self.data = find_trans_based_on_coin(user, "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c")
+        self.thenAnalysis()
+        return self
+
+    def findBUSDFor(self, user: str) -> "CoinList":
+        self.dec = 18
+        self.by_user(user)
+        self.sym = "BUSD"
+        self.data = find_trans_based_on_coin(user, "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56")
         self.thenAnalysis()
         return self
 
     def findUSDCFor(self, user: str) -> "CoinList":
         self.dec = 18
         self.by_user(user)
+        self.sym = "USDC"
         self.data = find_trans_based_on_coin(user, "0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d")
         self.thenAnalysis()
         return self
@@ -231,11 +326,11 @@ class CoinList(Filex):
             return False
 
         for row in list_da:
-            if row["from"] == self.wallet_address:
+            if "from" in row and row["from"] == self.wallet_address:
                 self.outgoing = self.outgoing + int(row["value"])
                 self.outcount = self.outcount + 1
 
-            if row["to"] == self.wallet_address:
+            if "to" in row and row["to"] == self.wallet_address:
                 self.incoming = self.incoming + int(row["value"])
                 self.incount = self.incount + 1
 
@@ -253,7 +348,7 @@ class CoinList(Filex):
             byValueStr(row["value"]),
             row["from"],
             row["to"],
-            "USDT",
+            self.sym,
             row["blockHash"],
             readable,
             "\n"
@@ -268,26 +363,6 @@ class CoinList(Filex):
         self.AppendLineTransaction(
             statement_sum.format(self.wallet_address, value_out, self.outcount, value_in, self.incount, net)
         )
-
-
-class WithTags:
-
-    def __init__(self):
-        self.tags = {}
-
-    def tagPre(self):
-        with open('tagged.json', newline='') as f:
-            tags = json.loads(f.read())
-            self.tags = tags["exchange"]
-            self.black = tags["blacklist"]
-
-    def isTagged(self, address: str) -> bool:
-        return address in self.tags
-
-    def tagging(self, address: str) -> str:
-        if self.isTagged is True:
-            return self.tags[address]
-        return ""
 
 
 class Analysis(WithTags):
@@ -307,7 +382,7 @@ class Analysis(WithTags):
 
     def handle_history(self):
         files = self.report_list()
-        print(f"total files: {len(files)}")
+        print(f"local anaylsis total files: {len(files)}")
         for f in files:
             self.start(f)
 
@@ -420,7 +495,6 @@ class Analysis(WithTags):
             try:
                 self.processLine(line)
             except IndexError:
-                print("index erro. skip")
                 continue
         self.ender(net, t_out, t_in)
 
@@ -499,8 +573,10 @@ class SubLayerAnalysis(WithTags):
         self.booklegerlist = []
         self.jsonfile = ""
         self.holdself = ""
+        self.coin = ""
 
-    def start(self, address: str):
+    def start(self, address: str, coin="usdt"):
+        self.coin = coin
         asyncio.run(self.corstart(address, 10000))
 
     async def corstart(self, holder_address: str, val_scope: int = 1000):
@@ -540,9 +616,16 @@ class SubLayerAnalysis(WithTags):
         print(f"Signal {signum} received.")
 
     def loop_run_coin_marlke(self, address_t: str):
-        CoinList().findUsdtFor(address_t)
+        base_coin = CoinList()
+
+        if self.coin == "usdt":
+            base_coin.findUsdtFor(address_t)
+        if self.coin == "busd":
+            base_coin.findBUSDFor(address_t)
+        if self.coin == "usdc":
+            base_coin.findUSDCFor(address_t)
         Analysis().start(address_t)
-        SubLayerAnalysis().start(address_t)
+        SubLayerAnalysis().start(address_t, coin=self.coin)
         BigQueue.workers -= 1
         self.check_runner()
 
@@ -553,15 +636,30 @@ class SubLayerAnalysis(WithTags):
             BigQueue.scan_task[last_address] = x
             BigQueue.workers += 1
 
-    def read_coin_only(self, address: str):
-        CoinList().findUsdtFor(address)
+    def read_coin_only(self, address_t: str):
+
+        base_coin = CoinList()
+        if self.coin == "usdt":
+            base_coin.findUsdtFor(address_t)
+        if self.coin == "busd":
+            base_coin.findBUSDFor(address_t)
+        if self.coin == "usdc":
+            base_coin.findUSDCFor(address_t)
+
         BigQueue.workers -= 1
         self.check_runner()
 
-    def fillReport(self):
+    def fillReport(self, coin="usdt"):
+        self.coin = coin
         m = grab_reports()
+        base_coin = CoinList()
         for a in m:
-            CoinList().findUsdtFor(a)
+            if self.coin == "usdt":
+                base_coin.findUsdtFor(a)
+            if self.coin == "busd":
+                base_coin.findBUSDFor(a)
+            if self.coin == "usdc":
+                base_coin.findUSDCFor(a)
 
 
 """
@@ -597,20 +695,7 @@ def grab_reports() -> list:
     return tmp
 
 
-def dp_result_x(tx: list):
-    file_x = Filex()
-    for a in tx:
-        data = a["input"]
-        method = data[0:9]
-        if "0x5fdbfd8" == method:
-            child = data[34:74]
-            parent = data[98:]
-            file_x.AppendLineRelation(f"{child} - {parent}\n")
-        else:
-            print(f"skip -- {method}")
-
-
-def do_list_contract(_account: str, page_d: int = 0):
+def do_list_contract(_account: str, page_d: int = 0, callback=None):
     payload = {
         "module": "account",
         "action": "txlist",
@@ -627,11 +712,12 @@ def do_list_contract(_account: str, page_d: int = 0):
         a = response.json()
         message_ed = a['message']
         code_p = int(a['status'])
-        print(f"page: {page_d}")
+        print(f"page: {page_d}, status {code_p}")
 
         if code_p == 1:
             res_list = a["result"]
-            dp_result_x(res_list)
+            if callback is not None:
+                callback(res_list)
 
         elif code_p == 0:
             print(response)
@@ -655,12 +741,6 @@ def do_list_contract(_account: str, page_d: int = 0):
     except Exception as e:
         print(f"got error from the explorer error exception -> {_account}, {e}")
         return _account
-
-
-def key_set_location(ds: list, address: str):
-    for n in range(100, 200):
-        do_list_contract(address, n)
-        pass
 
 
 def find_key(dictsx: list, address: str) -> int:
@@ -742,65 +822,91 @@ def build_bot_tpl(name: str, iter: int):
     return dot
 
 
-def graph_building_bsc_analysis_read(project_name, scope: int = 1000):
-    a = Analysis()
-    addresses = a.report_list()
-    edges = 0
-    file_count = 0
-    sum_edges = 0
+class Graph(WithTags):
+    def __init__(self):
+        super().__init__()
+        self.tagPre()
 
-    dot = build_bot_tpl(project_name, file_count)
+    def graph_building_bsc_analysis_read(self, project_name, scope: int = 1000):
+        a = Analysis()
+        addresses = a.report_list()
+        edges = 0
+        file_count = 0
+        sum_edges = 0
+        dot = build_bot_tpl(project_name, file_count)
+        for from_address in addresses:
+            data = a.get_analysis(from_address)
 
-    for from_address in addresses:
-        data = a.get_analysis(from_address)
-        balance_net = 0
-        if "balance" in data:
-            balance_net = data["balance"]
-        if "ranks" in data:
-            ranks = data["ranks"]
-            if len(ranks) > 0:
-                for m in ranks:
-                    to_address = m["address"]
-                    balance = m["bal"]
-                    hit = m["hit"]
-                    special = m["mark"]
+            balance_net = 0
+            if "balance" in data:
+                balance_net = data["balance"]
+            if "ranks" in data:
+                ranks = data["ranks"]
+                if len(ranks) > 0:
+                    for m in ranks:
+                        to_address = m["address"]
+                        balance = m["bal"]
+                        hit = m["hit"]
+                        special = m["mark"]
 
-                    if abs(balance) < scope:
-                        continue
-
-                    if balance > 0:
-                        if special != "":
+                        if abs(balance) < scope:
                             continue
 
-                        a1 = from_address
-                        a2 = to_address
-                    else:
-                        a1 = to_address
-                        a2 = from_address
+                        content_label = f"{hit} 笔, {abs(balance)}"
+                        line_color = "black"
 
-                    content_label = (special + ",") if special != "" else ""
-                    content_label += f"{hit} 笔, {abs(balance)}"
+                        if balance > 0:
 
-                    if special != "":
-                        dot.edge(a1, a2, shape='diamond', color="red:blue", label=content_label)
-                    else:
-                        dot.edge(a1, a2, label=content_label)
+                            if self.isTagged(to_address):
+                                # from_address = special + " user \n" + from_address
+                                content_label += "\nTo " + special
+                                line_color = "red"
+                                dot.node(from_address, shape='box', fillcolor="firebrick1", style="filled")
+                            elif self.isDex(to_address):
+                                dot.node(from_address, shape='box', fillcolor="darkslategray2", style="filled",
+                                         fontcolor="darkviolet")
 
-                    edges += 1
+                            a1 = from_address
+                            a2 = to_address
+                        else:
 
-        if edges > 3000:
-            print("Over 3000 edges will now need to cut off for another chart")
+                            if self.isTagged(to_address):
+                                content_label += "\nFrom " + special
+                                line_color = "blue"
+                                dot.node(to_address, shape='box', fillcolor="deepskyblue1", style="filled")
+                            elif self.isDex(to_address):
+                                dot.node(from_address, shape='box', fillcolor="darkslategray2", style="filled",
+                                         fontcolor="darkviolet")
+
+                            a1 = to_address
+                            a2 = from_address
+
+                        dot.edge(a1, a2, color=line_color, label=content_label)
+                        edges += 1
+
+            if edges > 3000:
+                print("Over 3000 edges will now need to cut off for another chart")
+                dot.render(directory='data/charts').replace('\\', '/')
+                file_count += 1
+                sum_edges += edges
+                edges = 0
+                dot = build_bot_tpl(name=project_name, iter=file_count)
+
+            # if edges > 10:
+            #    break
+        if edges > 0:
+            print("end game final chart.")
+
+            # add a legend row
+            """with dot.subgraph() as s:
+                s.attr(rank='same')
+                s.node('legend1', label='Legend 1')
+                s.node('legend2', label='Legend 2')
+                s.node('legend3', label='Legend 3')
+                
+            """
+
             dot.render(directory='data/charts').replace('\\', '/')
-            file_count += 1
             sum_edges += edges
-            edges = 0
-            dot = build_bot_tpl(name=project_name, iter=file_count)
 
-        # if edges > 10:
-        #    break
-    if edges > 0:
-        print("end game final chart.")
-        dot.render(directory='data/charts').replace('\\', '/')
-        sum_edges += edges
-
-    print(f"The total edges is {sum_edges}")
+        print(f"The total edges is {sum_edges}")

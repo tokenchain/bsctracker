@@ -1,6 +1,7 @@
 {
   "exchange": {
     "0x0000000000000000000000000000000000000000": "blackhole",
+    "0x000000000000000000000000000000000000dead": "blackhole",
     "0x5754284f345afc66a98fbb0a0afe71e0f007b949": "tether scrambler eth",
     "0xc6cde7c39eb2f0f0095f41570af89efc2c1ea828": "bitfinex (mint)",
     "0xf4b51b14b9ee30dc37ec970b50a486f37686e2a8": "bitfinex (mint)",
@@ -40,7 +41,7 @@
     "0xa305fab8bda7e1638235b054889b3217441dd645": "binance",
     "0xb3f923eabaf178fc1bd8e13902fc5c61d3ddef5b": "binance",
     "0x8025504c05b146ae25a84c82a73f447a88b8ae9a": "ftx",
-    "0x21a31Ee1afC51d94C2eFcCAa2092aD1028285549": "binance",
+    "0x21a31ee1afc51d94c2efccaa2092ad1028285549": "binance",
     "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984": "uniswap",
     "0x7a250d5630b4cf539739df2c5dacb4c659f2488d": "uniswap",
     "0x090d4613473dee047c3f2706764f49e0821d256e": "uniswap",
@@ -54,6 +55,17 @@
     "0x95d105813b6076a9f6417610e6b58a7d7b343dc5": "coinbase",
     "0xb5c068d3ef6c91a24cda27d10817bdb46ea64760": "ftx",
     "0x4f05cf9cb5d2c96a26f1a4b8c8807cad74f1a2c0": "binance"
+  },
+  "dex": {
+    "0x05ff2b0db69458a0750badebc4f9e13add608c7f": "PancakeSwap: Router",
+    "0xdef171fe48cf0115b1d80b88dc8eab59176fee57": "Paraswap v5: Augustus Swapper",
+    "0x26d0c625e5f5d6de034495fbde1f6e9377185618": "DPPOracle",
+    "0xc68e0d69c74dd1b121c8575c442ddc32b093c1d9": "PoolOne",
+    "0x62c1dec1ff328dcdc157ae0068bb21af3967acd9": "MDEX LP Token (MDEX LP)",
+    "0x9330a0d94679fcc1d28b7794dcd27af488ae4a14": "PancakeSwap: DST ",
+    "0xb370ea0cee1eee0e2988d062fd3391b2cf2759a1": "OciCat-BUSD",
+    "0xc5b0d73a7c0e4eaf66babf7ee16a2096447f7ad6": "PancakeSwap: BDO-BUSD",
+    "0x20049985171b9efea7620b49e49fb8f8ef580b18": "PancakeSwap: ABS-BUSD"
   },
   "blacklist": [
     "0x101ce0cedd142f199c9ef61739ae59b6611a0fc0",
