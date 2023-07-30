@@ -1,4 +1,3 @@
-import requests
 import graphviz
 import math
 from typing import Union
@@ -206,6 +205,27 @@ class Filex:
         fo.write(content)
         fo.close()
         print(statement.format(time.ctime(), filename))
+
+    @staticmethod
+    def isFileFound(filename: str):
+        return os.path.isfile(filename)
+
+    @staticmethod
+    def getJson(filename: str):
+        with open(filename, newline="") as f:
+            dat = json.loads(f.read())
+            return dat
+
+    @staticmethod
+    def loadList(filename: str) -> list:
+        with open(filename, newline="") as f:
+            gs = []
+            for line in f.readlines():
+                line = line.replace("\n", "")
+                if line != "":
+                    gs.append(line)
+
+            return gs
 
     def LoadBlackList(self) -> list:
         self.file_name_x = "data/blacklist.json"
@@ -783,28 +803,6 @@ def bsc_relation_read(dot):
     return dot
 
 
-def graph_building_bsc_relations(project_name: str):
-    dot = graphviz.Digraph(
-        project_name,
-        comment='Sun',
-        engine='dot',
-        format='pdf'
-    )
-    dot.attr(
-        ordering='out',
-        k='2.2',
-        overlap='prism0',
-        rankdir='LR',
-        size='1000,250'
-    )
-    # dot.attr('node', shape='doublecircle')
-    # dot.format = 'pdf'
-    # dot.engine = 'dot'
-    # dot.engine = 'neato'
-    dot = bsc_relation_read(dot)
-    dot.render(directory='data/charts').replace('\\', '/')
-
-
 def build_bot_tpl(name: str, iter: int):
     dot = graphviz.Digraph(
         f"{name}-{iter}",
@@ -898,12 +896,12 @@ class Graph(WithTags):
             print("end game final chart.")
 
             # add a legend row
-            """with dot.subgraph() as s:
+            """
+            with dot.subgraph() as s:
                 s.attr(rank='same')
                 s.node('legend1', label='Legend 1')
                 s.node('legend2', label='Legend 2')
                 s.node('legend3', label='Legend 3')
-                
             """
 
             dot.render(directory='data/charts').replace('\\', '/')

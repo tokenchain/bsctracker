@@ -1,3 +1,4 @@
+#!/usr/bin/python
 import json
 
 from core.libxx import Filex

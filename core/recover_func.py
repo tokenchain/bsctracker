@@ -1,17 +1,19 @@
 from web3 import Web3, HTTPProvider
 from eth_account import Account
 
-BSC_API = "https://bsc-mainnet.rpcfast.com?api_key=IeoliMrDIzyON5sNBVM04kGzox4uIWSMIarblgFZDLaDpiJb6SdUZIdNplG4cn1i"
+
+BSC_API_1 = "https://bsc-mainnet.rpcfast.com?api_key=IeoliMrDIzyON5sNBVM04kGzox4uIWSMIarblgFZDLaDpiJb6SdUZIdNplG4cn1i"
 """
 API collections
 https://control.rpcfast.com/dashboard/?code=mLTkpMtxn1ggYFQkAjnuEwUV6pvd61JZwuuyGetjdjCi0&state=RnJZWmtJTFdaVi1YbDU0Q2o0RG5rQ2lQeEE2VVBkdFh1TEdYRkpIcWswSA%3D%3D
 """
 BSC_API_2 = "https://bsc-dataseed.binance.org/"
+BSC_API_3 = "https://bsc-dataseed1.defibit.io"
 
 
 def write_func(contract_address, sender_address, private_key, signature):
     # Connect to Ethereum node
-    web3 = Web3(HTTPProvider(BSC_API))
+    web3 = Web3(HTTPProvider(BSC_API_1))
 
     # Set contract address and function signature
     # contract_address = '0x123456...'
@@ -76,3 +78,11 @@ def read_func_0x(contract_address, signature_code, sender_address=None, private_
     # Decode the output of the contract call
     result = output.hex()
     print("Result is: ", result)
+
+
+def tx_get(tx_hash: str):
+    # Connect to Ethereum node
+    _web3 = Web3(HTTPProvider(BSC_API_2))
+    by = _web3.eth.get_raw_transaction(tx_hash)
+    result = by.hex()
+    print(f"hex result: {result}")

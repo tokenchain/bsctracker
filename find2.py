@@ -9,6 +9,9 @@ if __name__ == '__main__':
         contract_address="0x53c4dFF0e36b5ae029eE4E4cD1d6eC40844c7D81",
         signature="pancakeRouterAddress()"
     ) 
+
+    Drop your $ETH wallets
+    
     """
     read_func_0x(
         sender_address="0x25bf0C8d7909a581549Dc2d075Ba12364D5ec0CA",
